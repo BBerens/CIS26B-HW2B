@@ -53,6 +53,7 @@ void traverse_forw(STOCK *list);
 void traverse_back(STOCK *list);
 QUOTE *push(QUOTE *stack, double price);
 QUOTE *pop(QUOTE **stack);
+void printQuotes(QUOTE *stack);
 
 int main( void )
 {
@@ -72,8 +73,8 @@ int main( void )
 	printf("Ascending:\n");
 	traverse_forw(stockList);
 
-	printf("Descending:\n");
-	traverse_back(stockList);
+	//printf("Descending:\n");
+	//traverse_back(stockList);
 
 
     #ifdef _MSC_VER
@@ -146,7 +147,7 @@ int insert(STOCK *list, char *symbol, double price)// need to add a push for the
 	}
 	else
 	{
-		push(curr->quoteStack, price);
+		curr->quoteStack = push(curr->quoteStack, price);
 		curr->numQuotes += 1;
 	}
 	return duplicate;
@@ -164,7 +165,8 @@ void traverse_forw(STOCK *list)
 	while (list->symbol[0] != DUMMY_TRAILER)
 	{
 		printf("%-6s $%.2f\n", list->symbol, list->quoteStack->price);
-		list = list->forw;
+		printQuotes(list->quoteStack);
+		list = list->forw;		
 	}
 	return;
 }
@@ -189,8 +191,6 @@ void traverse_back(STOCK *list)
 int readStocksFromFile(char *filename, STOCK *stockList)
 {
 	FILE *fpInput;
-	int numStocks;
-	STOCK *pStock;
 	double tempPrice;
 	char tempsymbol[20];
 
@@ -259,4 +259,16 @@ QUOTE *pop(QUOTE **stack)
 	first->next = NULL;
 
 	return first;
+}
+
+/***************************************************
+Stack Print: delete the first node
+*/
+void printQuotes(QUOTE *stack)
+{
+	while (stack)
+	{
+		printf("       $%.2f\n", stack->price);
+		stack = stack->next;
+	}
 }

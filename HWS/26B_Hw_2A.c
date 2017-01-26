@@ -39,8 +39,10 @@ typedef struct
 typedef struct node NODE;
 struct node
 {
-    STUDENT     data;
-    struct node next;
+    //STUDENT     data;							ERROR #1
+	STUDENT     *data;
+    //struct node next;							ERROR #2
+	struct node *next;
 };
 
 void printStu(const STUDENT *pStu);
@@ -61,10 +63,11 @@ int main (void)
         {"Lopez, Sophia",   {83, 78}, 95}
     };
     
-    NODE *stack;
+    //NODE *stack;									ERROR #3
+	NODE *stack = NULL;
     NODE *top;
     NODE *queue = NULL, *rear = NULL;
-    NODE front;
+    NODE *front;
     int i, n, count = 4;
     
     // build stack and queue with data from an array of STUDENT structures
@@ -72,32 +75,40 @@ int main (void)
     for ( n = 0; n < count; n++)
     {
         i = rand() % NUM_STU;
-        push(stack, &stuList[i]);
-        enqueue(&queue, &rear, stuList[i]);
+        //push(stack, &stuList[i]);					ERROR #4
+		stack = push(stack, &stuList[i]);
+        //enqueue(&queue, &rear, stuList[i]);		ERROR #5
+		enqueue(&queue, &rear, &stuList[i]);
     }
     
     // display stack
     printf("STACK contents from top to bottom:\n");
-    top = (NODE *) malloc(sizeof(NODE));
-    if (!top) printf("... error!\n"), exit(1);
-    while ((top = pop(stack))) // top != NULL
+    //top = (NODE *) malloc(sizeof(NODE));
+    //if (!top) printf("... error!\n"), exit(1);	ERROR #6 (uneccessary to dynamically allocate a node here)
+    //while ((top = pop(stack)))					ERROR #7
+	while ((top = pop(&stack))) // top != NULL
     {
-        printStu(&top->data);
+        //printStu(&top->data);						ERROR #8
+		printStu(top->data);
+		free(top); //								ERROR #9 (added this line to resolve memory leak)									
     }
     printf("\n\n");
     
     // display queue
     printf("QUEUE contents from front to rear:\n");
-    while ((front = dequeue(queue, rear))) // front != NULL
+    //while ((front = dequeue(queue, rear)))		ERROR #10
+	while (front = dequeue(&queue, &rear)) // front != NULL
     {
-        printStu(&front->data);
+        //printStu(&front->data);					ERROR #11
+		printStu(front->data);						
+		free(front); //								ERROR #12 (added this line to resolve memory leak)
     }
     printf("\n\n");
     
     #ifdef _MSC_VER
         printf( _CrtDumpMemoryLeaks() ? "Memory Leak\n" : "No Memory Leak\n");
     #endif
-    
+		system("pause");							//ERROR? Can't read the output to the screen without a pause
     return 0;
 }
 /***************************************************
@@ -126,7 +137,8 @@ NODE *push(NODE *stack, const STUDENT *pStu)
         printf("... error in push!\n");
         exit(1);
     }
-    pnew->data = *pStu;
+    //pnew->data = *pStu;							Error #13
+	pnew->data = pStu;
     pnew->next = stack;
     stack = pnew;
     
@@ -161,7 +173,8 @@ void enqueue(NODE **queue, NODE **rear, const STUDENT *pStu)
         printf("... error in enqueue!\n");
         exit(1);
     }
-    pnew->data = *pStu;
+    //pnew->data = *pStu;							ERROR #14
+	pnew->data = pStu;
     pnew->next = NULL;
     if (*queue == NULL) *queue = pnew;
     else (*rear)->next = pnew;
@@ -187,6 +200,21 @@ NODE *dequeue(NODE **queue, NODE **rear)
 
 /*	================= Sample Output ================= */
 /*	Results:
- 
+ STACK contents from top to bottom:
+Davis, Emma                      96   88   97
+Lopez, Sophia                    83   78   95
+Smith, Olivia                    91   89   86
+Lopez, Sophia                    83   78   95
+
+
+QUEUE contents from front to rear:
+Lopez, Sophia                    83   78   95
+Smith, Olivia                    91   89   86
+Lopez, Sophia                    83   78   95
+Davis, Emma                      96   88   97
+
+
+No Memory Leak
+Press any key to continue . . .
  
  */
