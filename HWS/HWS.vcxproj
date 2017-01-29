@@ -18,12 +18,6 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="26B_Hw_2B.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="in.txt" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7BD37D54-FBEA-4A76-9602-48FE3818444D}</ProjectGuid>
     <RootNamespace>HWS</RootNamespace>

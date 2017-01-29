@@ -19,10 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{73A956AA-D1D1-4AFF-AD8A-36097EFD391C}</ProjectGuid>
-    <RootNamespace>Project1</RootNamespace>
+    <ProjectGuid>{4D4DC555-2D26-4274-B1B3-A65947E8FB98}</ProjectGuid>
+    <RootNamespace>HW2BProgContMem</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
-    <ProjectName>HW2A</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -111,8 +110,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Downloads\Examples_2_3\e_3_14_get_node.c" />
-    <ClCompile Include="..\HWS\26B_Hw_2A.c" />
+    <ClCompile Include="..\HWS\26B_Hw_2B.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\HWS\stocks.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

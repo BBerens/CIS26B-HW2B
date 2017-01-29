@@ -46,14 +46,22 @@ struct stock
 
 
 
-void getFilename(char *filename, int length, char *type);
+void getFilename(char *filename, int length);
 STOCK *init_list(void);
 int readStocksFromFile(char *filename, STOCK *stockList);
 void traverse_forw(STOCK *list);
 void traverse_back(STOCK *list);
 QUOTE *push(QUOTE *stack, double price);
 QUOTE *pop(QUOTE **stack);
-void printQuotes(QUOTE *stack);
+void printQuotes(QUOTE *stack, int numQuotes);
+void displayManager(STOCK *list);
+void traverse_forwRange(STOCK *start, STOCK *finish);
+void traverse_backRange(STOCK *start, STOCK *finish);
+STOCK * findStock(STOCK *list, char *symbol);
+void searchManager(STOCK *list);
+
+
+
 
 int main( void )
 {
@@ -66,15 +74,19 @@ int main( void )
 
 	while (isInvalid)
 	{
-		getFilename(filename, sizeof(filename), "in");
+		getFilename(filename, sizeof(filename));
 		isInvalid = readStocksFromFile(filename, stockList);
 	}
 
 	printf("Ascending:\n");
 	traverse_forw(stockList);
+	
+	printf("Descending:\n");
+	traverse_back(stockList);
 
-	//printf("Descending:\n");
-	//traverse_back(stockList);
+	displayManager(stockList);
+
+	searchManager(stockList);
 
 
     #ifdef _MSC_VER
@@ -165,7 +177,6 @@ void traverse_forw(STOCK *list)
 	while (list->symbol[0] != DUMMY_TRAILER)
 	{
 		printf("%-6s $%.2f\n", list->symbol, list->quoteStack->price);
-		printQuotes(list->quoteStack);
 		list = list->forw;		
 	}
 	return;
@@ -209,20 +220,18 @@ int readStocksFromFile(char *filename, STOCK *stockList)
 Prompt user to enter a filename and stores the user input or default value
 Pre		filename may or may not be empty when passed in
 inOrOut indicates whether the filename will be used as input or output and determines the default string to be used if necessary
-Post	filename now contains either the user's input or one default strings "in.txt" or "out.txt"
+Post	filename now contains either the user's input or the default string "stocks.txt"
 */
-void getFilename(char *filename, int length, char *inOrOut)
+void getFilename(char *filename, int length)
 {
-	char defaultName[10];
-	strcpy(defaultName, inOrOut);
-	strcat(defaultName, ".txt");
-	printf("Enter the name of the file to be used as %sput. Alternatively press 'enter' to use the default file.\n", inOrOut);
+	char defaultName[] = "stocks.txt";
+	printf("Enter the name of the file to read stock information from. Alternatively press 'enter' to use the default file.\n");
 	fgets(filename, length, stdin);
 	*(filename + strlen(filename) - 1) = '\0';
 	if (!strcmp(filename, ""))
 	{
 		strcpy(filename, defaultName);
-		printf("Using %s for %sput.\n", defaultName, inOrOut);
+		printf("Using %s for input.\n", defaultName);
 	}
 }
 
@@ -264,11 +273,112 @@ QUOTE *pop(QUOTE **stack)
 /***************************************************
 Stack Print: delete the first node
 */
-void printQuotes(QUOTE *stack)
+void printQuotes(QUOTE *stack, int numQuotes)
 {
-	while (stack)
+	for(int quote = 1; quote <= numQuotes; quote++)
 	{
 		printf("       $%.2f\n", stack->price);
 		stack = stack->next;
+	}
+}
+
+void displayManager(STOCK *list)
+{
+	char startSymbol[100] = {0};
+	char finishSymbol[100];
+	STOCK *startStock, *finishStock;
+	
+	while (strcmp(startSymbol, "QUIT"))
+	{
+		printf("Enter the stock symbol to start from or enter 'QUIT' to stop: ");
+		fgets(startSymbol, 99, stdin);
+		*(startSymbol + strlen(startSymbol) - 1) = '\0';
+		if (!strcmp(startSymbol, "QUIT")) break;
+		printf("Enter the stock symbol to finish at: ");
+		fgets(finishSymbol, 99, stdin);
+		*(finishSymbol + strlen(finishSymbol) - 1) = '\0';
+
+		startStock = findStock(list, startSymbol);
+		finishStock = findStock(list, finishSymbol);
+
+		if (startStock && finishStock)
+		{
+			printf("Ascending:\n");
+			traverse_forwRange(startStock, finishStock);
+			printf("Descending:\n");
+			traverse_backRange(startStock, finishStock);
+		}
+		else if (startStock) traverse_forwRange(startStock, startStock);
+		else if (finishStock) traverse_forwRange(finishStock, finishStock);
+		else printf("Neither stock symbol is found.\n");
+	}
+}
+
+/***************************************************
+Traverses forward a circularly doubly-linked
+list with one sentinel node to print out the
+contents of each node
+*/
+void traverse_forwRange(STOCK *start,STOCK *finish)
+{
+	STOCK *currStock = start;
+	while (strcmp(currStock->symbol, finish->symbol))
+	{
+		if(currStock->symbol[0] != DUMMY_TRAILER) 
+			printf("%-6s $%.2f\n", currStock->symbol, currStock->quoteStack->price);
+		currStock = currStock->forw;
+	}
+	printf("%-6s $%.2f\n", currStock->symbol, currStock->quoteStack->price);
+	
+	return;
+}
+
+
+void traverse_backRange(STOCK *start, STOCK *finish)
+{
+	STOCK *currStock = start;
+	while (strcmp(currStock->symbol, finish->symbol))
+	{
+		if (currStock->symbol[0] != DUMMY_TRAILER)
+		{
+			printf("%-6s $%.2f\n", currStock->symbol, currStock->quoteStack->price);
+		}
+		currStock = currStock->back;
+	}
+	printf("%-6s $%.2f\n", currStock->symbol, currStock->quoteStack->price);
+
+	return;
+}
+
+STOCK * findStock(STOCK *list, char *symbol)
+{
+	STOCK *foundStock = NULL;
+	list = list->forw; // skip the dummy node
+	while (strcmp(list->symbol, symbol) && list->symbol[0] != DUMMY_TRAILER) list = list->forw;
+	if (list->symbol[0] == DUMMY_TRAILER) return foundStock;
+	return list;
+}
+
+void searchManager(STOCK *list)
+{
+	char stockSymbol[100] = { 0 };
+	STOCK *searchStock;
+	int numQuotes;
+
+	while (strcmp(stockSymbol, "QUIT"))
+	{
+		printf("Enter the stock symbol to search for or enter 'QUIT' to stop: ");
+		fgets(stockSymbol, 99, stdin);
+		*(stockSymbol + strlen(stockSymbol) - 1) = '\0';
+		if (!strcmp(stockSymbol, "QUIT")) break;
+
+		if (searchStock = findStock(list, stockSymbol))
+		{
+			printf("Enter the number of quotes to print: ");
+			scanf("%d", &numQuotes);							// FIX THIS
+			if (numQuotes <= searchStock->numQuotes)
+				printQuotes(searchStock->quoteStack, numQuotes);
+		}
+		else printf("Stock %s couldn't be found.\n", stockSymbol);
 	}
 }
