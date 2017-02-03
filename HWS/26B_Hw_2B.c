@@ -44,39 +44,26 @@ struct stock
 	STOCK *back;
 };
 
-
-
+void displayManager(STOCK *list);
+STOCK *findStock(STOCK *list, char *symbol);
 void getFilename(char *filename, int length);
 STOCK *init_list(void);
-int readStocksFromFile(char *filename, STOCK *stockList);
-void traverse_forw(STOCK *list);
-void traverse_back(STOCK *list);
-QUOTE *push(QUOTE *stack, double price);
 QUOTE *pop(QUOTE **stack);
 void printQuotes(QUOTE *stack, int numQuotes);
-void displayManager(STOCK *list);
+QUOTE *push(QUOTE *stack, double price);
+int readStocksFromFile(STOCK *stockList);
+void searchManager(STOCK *list);
+void traverse_forw(STOCK *list);
+void traverse_back(STOCK *list);
 void traverse_forwRange(STOCK *start, STOCK *finish);
 void traverse_backRange(STOCK *start, STOCK *finish);
-STOCK * findStock(STOCK *list, char *symbol);
-void searchManager(STOCK *list);
-
-
-
 
 int main( void )
 {
 	
-	char filename[100];
 	STOCK *stockList;
-	int isInvalid = 1;
 
 	stockList = init_list();
-
-	while (isInvalid)
-	{
-		getFilename(filename, sizeof(filename));
-		isInvalid = readStocksFromFile(filename, stockList);
-	}
 
 	printf("Ascending:\n");
 	traverse_forw(stockList);
@@ -199,11 +186,19 @@ void traverse_back(STOCK *list)
 	return;
 }
 
-int readStocksFromFile(char *filename, STOCK *stockList)
+int readStocksFromFile(STOCK *stockList)
 {
 	FILE *fpInput;
 	double tempPrice;
 	char tempsymbol[20];
+	char filename[100];
+	int isInvalid = 1;
+
+	while (isInvalid)
+	{
+		getFilename(filename, sizeof(filename));
+		isInvalid = readStocksFromFile(filename, stockList);
+	}
 
 	if (!(fpInput = fopen(filename, "r")))
 	{
